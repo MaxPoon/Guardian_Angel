@@ -1,0 +1,32 @@
+{
+  "name": "ibeaconserver",
+  "version": "1.0.0",
+  "description": "This is the node server for receiving and decoding iBeacon messagesthrough MQTT protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ntuer/iBeaconServer.git"
+  },
+  "keywords": [
+    "iBeacon",
+    "node",
+    "firebase",
+    "paho"
+  ],
+  "author": "peixiang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ntuer/iBeaconServer/issues"
+  },
+  "homepage": "https://github.com/ntuer/iBeaconServer#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "firebase": "^3.4.1",
+    "mathjs": "^3.5.3",
+    "mqtt": "^2.0.1"
+  }
+}
