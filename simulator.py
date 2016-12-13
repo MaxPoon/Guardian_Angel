@@ -105,10 +105,10 @@ def movement(floorplan, elderlies, elderly, id):
 				y = random.randint(0, height-1)
 			elderly.targetPosition = (x,y)
 			elderly.path = aStarPath(x,y)
-		print("current position: ", elderly.x, elderly.y)
-		print("target position: ", elderly.targetPosition)
+		# print("current position: ", elderly.x, elderly.y)
+		# print("target position: ", elderly.targetPosition)
 		nextPosition = elderly.path.pop(0)
-		print("next position:", nextPosition)
+		# print("next position:", nextPosition)
 		walkingTime = distance(elderly.x , elderly.y, nextPosition[0], nextPosition[1])/speed
 		time.sleep(walkingTime)
 		elderly.x = nextPosition[0]
