@@ -1,4 +1,4 @@
-import os, sys, random, heapq
+import os, sys, random, heapq, time, threading
 from PIL import Image
 
 toilets = []
@@ -53,9 +53,10 @@ class Elderly(object):
 		self.mode = "standing"
 		self.targetId = None
 		self.targetPosition = None
+		self.path = None
 
 def movement(floorplan, elderlies, elderly, id):
-	global height, width
+	global height, width, speed
 
 	def distance(x,y, targetX,targetY):
 		return ((x-targetX)**2 + (y- targetY)**2)**0.5
@@ -99,16 +100,36 @@ def movement(floorplan, elderlies, elderly, id):
 			elderly.mode = "wandering"
 			x = random.randint(0, width-1)
 			y = random.randint(0, height-1)
-			while floorplan[x][y] != 1:
+			while floorplan[x][y] != 1 or (x== elderly.x and y == elderly.y):
 				x = random.randint(0, width-1)
 				y = random.randint(0, height-1)
 			elderly.targetPosition = (x,y)
+			elderly.path = aStarPath(x,y)
+		print("current position: ", elderly.x, elderly.y)
+		print("target position: ", elderly.targetPosition)
+		nextPosition = elderly.path.pop(0)
+		print("next position:", nextPosition)
+		walkingTime = distance(elderly.x , elderly.y, nextPosition[0], nextPosition[1])/speed
+		time.sleep(walkingTime)
+		elderly.x = nextPosition[0]
+		elderly.y = nextPosition[1]
+		if (elderly.x, elderly.y) == elderly.targetPosition:
+			elderly.mode = "standing"
+			elderly.targetPosition = None
+			elderly.path = None
+
 	while True:
 		if elderly.mode == "standing":
+			if random.random() < 0.5: time.sleep(10 * random.random()) #continue to stand
+			else:
+				wander()
+		if elderly.mode == "wandering":
+			wander()
+
 
 
 	
-
+speed = 50 #pixel per second
 floorplan = readFloorplan()
 elderlies = []
 for i in range(10):
@@ -119,3 +140,6 @@ for i in range(10):
 		y = random.randint(0, height-1)
 	elderlies.append(Elderly(i, x, y))
 
+for id, elderly in enumerate(elderlies):
+	newThread = threading.Thread(target = movement, args = (floorplan, elderlies, elderly, i,))
+	newThread.start()
