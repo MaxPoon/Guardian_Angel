@@ -23,7 +23,7 @@ python simulator_server.py
 ```
 
 To get the elderlies' locations, send a get request to http://127.0.0.1:8889/location
-![](/home/maxpoon/Guardian_Angel/response.png) 
+![](https://github.com/MaxPoon/Guardian_Angel/blob/master/response.png) 
 
 ### Parameters
 Below are some parameters in the python program you may change:
