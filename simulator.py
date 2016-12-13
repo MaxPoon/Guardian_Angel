@@ -54,8 +54,11 @@ class Elderly(object):
 		self.targetId = None
 		self.targetPosition = None
 		self.path = None
+		self.toiletTime = 500 
+		self.targetToilet = None
+		#the time interval between the current time and the last time the agent went toilet
 
-def movement(floorplan, elderlies, elderly, id):
+def movement(floorplan, toilets, elderlies, elderly, id):
 	global height, width, speed
 
 	def distance(x,y, targetX,targetY):
@@ -78,7 +81,7 @@ def movement(floorplan, elderlies, elderly, id):
 				for j in (-1,0,1):
 					if i==0 and j==0: continue
 					if x+i >= width or x+i<0 or y+j>=height or y+j<0:continue
-					if floorplan[x+i][y+j] != 1: continue
+					if floorplan[x+i][y+j] ==0 : continue
 					if (x+i, y+j) in visited: continue
 					newDistance = dist + distance(x,y,x+i,y+j)
 					newHeuristic = newDistance + distance(x+i, y+j, targetX, targetY)
@@ -93,6 +96,31 @@ def movement(floorplan, elderlies, elderly, id):
 			state = state[3]
 		path.reverse()
 		return path
+
+	def aStarPathDistance(targetX, targetY):
+		openStack = []
+		currentState = (0, 0,(elderly.x, elderly.y), None) 
+		visited = set()
+		visited.add((elderly.x, elderly.y))
+		#format of state: (heuristic, distance from starting point, (x, y), preivous)
+		heapq.heappush(openStack, currentState)	
+		while len(openStack)>0:
+			state = heapq.heappop(openStack)
+			x = state[2][0]
+			y = state[2][1]
+			if x == targetX and y == targetY: return state[1]
+			dist = state[1]
+			for i in (-1,0,1):
+				for j in (-1,0,1):
+					if i==0 and j==0: continue
+					if x+i >= width or x+i<0 or y+j>=height or y+j<0:continue
+					if floorplan[x+i][y+j] != 1: continue
+					if (x+i, y+j) in visited: continue
+					newDistance = dist + distance(x,y,x+i,y+j)
+					newHeuristic = newDistance + distance(x+i, y+j, targetX, targetY)
+					newState = (newHeuristic, newDistance, (x+i, y+j), state)
+					visited.add((x+i, y+j))
+					heapq.heappush(openStack, newState)
 
 
 	def wander():
@@ -111,6 +139,7 @@ def movement(floorplan, elderlies, elderly, id):
 		# print("next position:", nextPosition)
 		walkingTime = distance(elderly.x , elderly.y, nextPosition[0], nextPosition[1])/speed
 		time.sleep(walkingTime)
+		elderly.toiletTime += walkingTime
 		elderly.x = nextPosition[0]
 		elderly.y = nextPosition[1]
 		if (elderly.x, elderly.y) == elderly.targetPosition:
@@ -118,13 +147,70 @@ def movement(floorplan, elderlies, elderly, id):
 			elderly.targetPosition = None
 			elderly.path = None
 
+	def goToilet():
+		if elderly.mode != "going toilet":
+			elderly.mode = "going toilet"
+			dist = None
+			for toilet in toilets:
+				tempDist = distance(elderly.x, elderly.y, toilet[0], toilet[1])
+				if dist is None or tempDist < dist:
+					dist = tempDist
+					elderly.targetToilet = toilet
+			# print("Id: ", elderly.id, " going to the toilet at ", elderly.targetToilet)
+			elderly.path = aStarPath(elderly.targetToilet[0], elderly.targetToilet[1])
+			elderly.path.pop(0)
+		if elderly.path[0] == elderly.targetToilet:
+			while True:
+				nobodyInside = True
+				for agent in elderlies:
+					if agent.x == elderly.targetToilet[0] and agent.y == elderly.targetToilet[1]:
+						nobodyInside = False
+						break
+				if not nobodyInside: 
+					# print("Id: ", elderly.id, "is waiting outside the toilet at ", elderly.targetToilet)
+					time.sleep(1)
+					continue
+				if nobodyInside:
+					# print("Id: ", elderly.id, "is in the toilet at ", elderly.targetToilet)
+					elderly.x = elderly.targetToilet[0]
+					elderly.y = elderly.targetToilet[1]
+					elderly.mode = "in toilet"
+					time.sleep(random.random()*5)
+					elderly.toiletTime = 0
+					elderly.mode = "wandering"
+					x = random.randint(0, width-1)
+					y = random.randint(0, height-1)
+					while floorplan[x][y] != 1 or (x== elderly.x and y == elderly.y):
+						x = random.randint(0, width-1)
+						y = random.randint(0, height-1)
+					elderly.targetPosition = (x,y)
+					elderly.path = aStarPath(x,y)
+					return
+		nextPosition = elderly.path.pop(0)
+		walkingTime = distance(elderly.x , elderly.y, nextPosition[0], nextPosition[1])/speed
+		time.sleep(walkingTime)
+		elderly.x = nextPosition[0]
+		elderly.y = nextPosition[1]
+		return
+
 	while True:
+		# print(elderly.toiletTime)
 		if elderly.mode == "standing":
-			if random.random() < 0.5: time.sleep(10 * random.random()) #continue to stand
+			if elderly.toiletTime > 100:
+				rand = random.random()
+				if rand < 2.718**(-(100/elderly.toiletTime)):
+					goToilet()
+			elif random.random() < 0.5: 
+				waitTime = 10 * random.random()
+				elderly.toiletTime += waitTime
+				time.sleep(waitTime) #continue to stand
 			else:
 				wander()
 		if elderly.mode == "wandering":
 			wander()
+
+		if elderly.mode == "going toilet":
+			goToilet()
 
 
 
@@ -141,5 +227,5 @@ for i in range(10):
 	elderlies.append(Elderly(i, x, y))
 
 for id, elderly in enumerate(elderlies):
-	newThread = threading.Thread(target = movement, args = (floorplan, elderlies, elderly, i,))
+	newThread = threading.Thread(target = movement, args = (floorplan, toilets,elderlies, elderly, i,))
 	newThread.start()

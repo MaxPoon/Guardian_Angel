@@ -22,7 +22,7 @@ def aStarPath(floorplan, X, Y, targetX, targetY):
 			for j in (-1,0,1):
 				if i==0 and j==0: continue
 				if x+i >= width or x+i<0 or y+j>=height or y+j<0:continue
-				if floorplan[x+i][y+j] != 1: continue
+				if floorplan[x+i][y+j] == 0: continue
 				if (x+i, y+j) in visited: continue
 				newDistance = dist + distance(x,y,x+i,y+j)
 				newHeuristic = newDistance + distance(x+i, y+j, targetX, targetY)
@@ -82,5 +82,5 @@ def readFloorplan():
 
 toilets = []
 floorplan = readFloorplan()
-path = aStarPath(floorplan, 100, 420, 130 ,420)
-# print(path)
+path = aStarPath(floorplan, 204, 445, 343 ,499)
+print(path)
