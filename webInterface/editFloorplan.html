@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="editFloorplan.css">
+	<script type="text/javascript" src="node_modules/vue/dist/vue.js"></script>
+	<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript" src="propeller.js"></script>
+	<script type="text/javascript" src="interact.js"></script>
+</head>
+<body>
+<div id="editFloorplanApp">
+	<input id="floorplanInput" type="file" name="Upload New Floorplan" @change="onFileChange"/>
+	<section id="left">
+		<span>Add At-risk Area:</span>
+		<div class="draggableAtRiskDiv" draggable="true" @dragstart="dragStart($event,'atRisk')"></div><br>
+		<span>Add Entrance/Exit Area:</span>
+		<div class="draggableEntranceDiv" draggable="true" @dragstart="dragStart($event,'entrance')"></div>
+	</section>
+	<section id="right">
+		<div id="floorplanDiv" @dragover="allowDrop" @drop="drop">
+			<img id="floorplan" :src="image" draggable="false"> 
+		</div>
+	</section>
+</div>
+<script type="text/javascript" src="editFloorplan.js"></script>
+</body>
+</html>
