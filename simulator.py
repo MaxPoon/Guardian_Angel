@@ -64,6 +64,8 @@ class Elderly(object):
 		self.path = None
 		self.toiletTime = 100 
 		self.targetToilet = None
+		self.lastUpdateX = 0
+		self.lastUpdateY = 0
 		#the time interval between the current time and the last time the agent went toilet
 
 def movement(q, floorplan, toilets, elderlies, elderly, id):
@@ -151,7 +153,10 @@ def movement(q, floorplan, toilets, elderlies, elderly, id):
 		elderly.toiletTime += walkingTime
 		elderly.x = nextPosition[0]
 		elderly.y = nextPosition[1]
-		q.put(("UPDATE Location  SET x = %s, y = %s, status = 'wandering' WHERE id = %s;" % ( elderly.x, elderly.y, elderly.id)))
+		if distance(elderly.x, elderly.y, elderly.lastUpdateX, elderly.lastUpdateY)>20:
+			q.put(("UPDATE Location  SET x = %s, y = %s, status = 'wandering' WHERE id = %s;" % ( elderly.x, elderly.y, elderly.id)))
+			elderly.lastUpdateX = elderly.x
+			elderly.lastUpdateY = elderly.y
 		if (elderly.x, elderly.y) == elderly.targetPosition:
 			print("Id: ", elderly.id, "arrived at ", elderly.targetPosition)
 			elderly.mode = "standing"
@@ -172,6 +177,7 @@ def movement(q, floorplan, toilets, elderlies, elderly, id):
 			print("Id: ", elderly.id, "starts going to talk with Id: ", target.id)
 			elderly.target = target
 			target.mode = "listening"
+			q.put(("UPDATE Location  SET status = 'listening' WHERE id = %s;" % ( target.id)))
 			elderly.path = aStarPath(target.x, target.y)
 			elderly.path.pop(0)
 		if distance(elderly.x, elderly.y, elderly.target.x, elderly.target.y) < 20:
@@ -183,6 +189,8 @@ def movement(q, floorplan, toilets, elderlies, elderly, id):
 			print("Id: ", elderly.id, "finished talking with Id: ", elderly.target.id)
 			elderly.target.mode = "standing"
 			elderly.mode = "standing"
+			q.put(("UPDATE Location  SET status = 'standing' WHERE id = %s;" % ( elderly.id)))
+			q.put(("UPDATE Location  SET status = 'standing' WHERE id = %s;" % ( elderly.target.id)))
 			elderly.target = None
 		else:
 			nextPosition = elderly.path.pop(0)
@@ -190,7 +198,10 @@ def movement(q, floorplan, toilets, elderlies, elderly, id):
 			time.sleep(walkingTime)
 			elderly.x = nextPosition[0]
 			elderly.y = nextPosition[1]
-			q.put(("UPDATE Location  SET x = %s, y = %s WHERE id = %s;" % ( elderly.x, elderly.y, elderly.id)))
+			if distance(elderly.x, elderly.y, elderly.lastUpdateX, elderly.lastUpdateY)>20:
+				q.put(("UPDATE Location  SET x = %s, y = %s WHERE id = %s;" % ( elderly.x, elderly.y, elderly.id)))
+				elderly.lastUpdateX = elderly.x
+				elderly.lastUpdateY = elderly.y
 
 
 	def goToilet():
@@ -240,7 +251,10 @@ def movement(q, floorplan, toilets, elderlies, elderly, id):
 		time.sleep(walkingTime)
 		elderly.x = nextPosition[0]
 		elderly.y = nextPosition[1]
-		q.put(("UPDATE Location  SET x = %s, y = %s WHERE id = %s;" % ( elderly.x, elderly.y, elderly.id)))
+		if distance(elderly.x, elderly.y, elderly.lastUpdateX, elderly.lastUpdateY)>20:
+			q.put(("UPDATE Location  SET x = %s, y = %s WHERE id = %s;" % ( elderly.x, elderly.y, elderly.id)))
+			elderly.lastUpdateX = elderly.x
+			elderly.lastUpdateY = elderly.y
 		return
 
 	while True:
@@ -258,7 +272,7 @@ def movement(q, floorplan, toilets, elderlies, elderly, id):
 					goToilet()
 					continue
 			rand = random.random()
-			if rand < 0.4: 
+			if rand < 0.6: 
 				waitTime = 10 * random.random()
 				elderly.toiletTime += waitTime
 				time.sleep(waitTime) #continue to stand
@@ -308,8 +322,9 @@ for id, elderly in enumerate(elderlies):
 conn.commit()
 while True:
 	if q.qsize() == 0:
-		time.sleep(0.5)
+		time.sleep(0.1)
 	else:
+		# print(q.qsize())
 		command = q.get()
 		cur.execute(command)
 		conn.commit()
