@@ -1,6 +1,7 @@
 # Guardian_Angel
 ### Install Dependencies
 Download and install python3 and pip from [here](https://www.python.org/downloads).
+
 Install sqlite database from [sqlite download page](http://www.sqlite.org/download.html) .
 ```
 sudo pip3 install Pillow
