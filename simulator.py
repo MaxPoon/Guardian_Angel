@@ -12,6 +12,16 @@ from queue import Queue
 toilets = []
 width, height = 0, 0
 def readFloorplan():
+	conn = sqlite3.connect('Elderlies.sqlite')
+	cur = conn.cursor()
+	cur.executescript('''
+	DROP TABLE IF EXISTS Location;
+	CREATE TABLE Toilet (
+	    id     INTEGER NOT NULL PRIMARY KEY UNIQUE,
+	    x      INTEGER,
+	    y      INTEGER
+	);
+	''')
 	global width, height
 	floorplanRGB = Image.open("floorplan.png")
 	width, height = floorplanRGB.size
@@ -47,10 +57,16 @@ def readFloorplan():
 						if x!=midC or y!= midR: floorplan[x][y] = 1
 
 	global toilets
+	count = 1
 	for col in range(width):
 		for row in range(height):
-			if floorplan[col][row]==2: toilets.append((col,row))
+			if floorplan[col][row]==2: 
+				toilets.append((col,row))
+				cur.execute('''INSERT OR IGNORE INTO Toilet (id, x, y) 
 
+								   VALUES ( ?, ?, ? )''', ( count, col, row) )
+				count += 1
+	conn.close()
 	return floorplan
 
 class Elderly(object):
