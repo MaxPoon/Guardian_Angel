@@ -35,6 +35,15 @@ Response format (json):
 }
 ```
 
+To get the locations of the toilets, send a get request to http://127.0.0.1:8889/toilet
+
+Response format (json):
+```
+{
+  id: [x,y]
+} 
+```
+
 ### Parameters
 Below are some parameters in the python program you may change:
 ##### simulator.py:
