@@ -23,5 +23,21 @@ def get_location():
 		d[row[0]] = ( row[1]*meterPerPixel, row[2]*meterPerPixel, row[3])
 	return json.dumps(d, sort_keys=True, indent=4)
 
+@app.route('/toilet')
+def get_toilet():
+	done = False
+	while not done:
+		try:
+			cur.execute('SELECT * FROM Toilet')
+			done = True
+		except Exception as e:
+			print("try again")
+		finally:
+			pass
+	d = {}
+	for row in cur:
+		d[row[0]] = ( row[1]*meterPerPixel, row[2]*meterPerPixel)
+	return json.dumps(d, sort_keys=True, indent=4)
+
 if __name__ == "__main__":
 	app.run(port=8889)

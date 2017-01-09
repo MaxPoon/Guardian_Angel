@@ -15,7 +15,7 @@ def readFloorplan():
 	conn = sqlite3.connect('Elderlies.sqlite')
 	cur = conn.cursor()
 	cur.executescript('''
-	DROP TABLE IF EXISTS Location;
+	DROP TABLE IF EXISTS Toilet;
 	CREATE TABLE Toilet (
 	    id     INTEGER NOT NULL PRIMARY KEY UNIQUE,
 	    x      INTEGER,
@@ -65,6 +65,7 @@ def readFloorplan():
 				cur.execute('''INSERT OR IGNORE INTO Toilet (id, x, y) 
 
 								   VALUES ( ?, ?, ? )''', ( count, col, row) )
+				conn.commit()
 				count += 1
 	conn.close()
 	return floorplan
