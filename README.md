@@ -35,7 +35,7 @@ Response format (json):
 }
 ```
 
-To get the locations of the toilets, send a get request to http://127.0.0.1:8889/toilet
+To get the coordinates of the toilets, send a get request to http://127.0.0.1:8889/toilet
 
 Response format (json):
 ```
