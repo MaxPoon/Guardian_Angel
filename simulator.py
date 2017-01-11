@@ -29,17 +29,17 @@ def readFloorplan():
 	floorplan = [[None for i in range(height)] for j in range(width)]
 	for row in range(height):
 		for col in range(width):
-			if floorplanRGB[col,row] == (255,255,255): #white
+			if floorplanRGB[col,row][0:3] == (255,255,255): #white
 				floorplan[col][row] = 1
-			elif floorplanRGB[col,row] == (0,0,0): #black
+			elif floorplanRGB[col,row][0:3] == (0,0,0): #black
 				floorplan[col][row] = 0
 			else:	#green
 				floorplan[col][row] = 2
 	del floorplanRGB
-
 	for col in range(width):
 		for row in range(height):
 			if floorplan[col][row] == 2:
+				print(col,row)
 				r = row
 				while r<height:
 					if floorplan[col][r] != 2: break
